@@ -1,0 +1,180 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+struct Buku {
+    string id_buku, isbn, judul, pengarang, penerbit, tahun_terbit;
+    int stok;
+};
+
+Buku daftarBuku[100];
+int jumlahBuku = 0;
+
+void bacaFile() {    // READ from file to array
+    ifstream file("buku.txt");
+    jumlahBuku = 0;
+
+    while (getline(file, daftarBuku[jumlahBuku].id_buku, '|')) {
+        getline(file, daftarBuku[jumlahBuku].isbn, '|');
+        getline(file, daftarBuku[jumlahBuku].judul, '|');
+        getline(file, daftarBuku[jumlahBuku].pengarang, '|');
+        getline(file, daftarBuku[jumlahBuku].penerbit, '|');
+        getline(file, daftarBuku[jumlahBuku].tahun_terbit, '|');
+        file >> daftarBuku[jumlahBuku].stok;
+        file.ignore(); // buang newline
+        jumlahBuku++;
+    }
+
+    file.close();
+}
+
+void simpanFile() {   // WRITE array to file (rewrite)
+    ofstream file("buku.txt");
+    for (int i = 0; i < jumlahBuku; i++) {
+        file << daftarBuku[i].id_buku << "|"
+             << daftarBuku[i].isbn << "|"
+             << daftarBuku[i].judul << "|"
+             << daftarBuku[i].pengarang << "|"
+             << daftarBuku[i].penerbit << "|"
+             << daftarBuku[i].tahun_terbit << "|"
+             << daftarBuku[i].stok << endl;
+    }
+    file.close();
+}
+
+// =================== CRUD ======================
+
+void tambahBuku() {
+    bacaFile();
+
+    cout << "\n===== Tambah Buku =====\n";
+    cout << "ID Buku        : ";
+    cin >> daftarBuku[jumlahBuku].id_buku;
+    cout << "ISBN           : ";
+    cin >> daftarBuku[jumlahBuku].isbn;
+
+    cin.ignore();
+    cout << "Judul Buku     : ";
+    getline(cin, daftarBuku[jumlahBuku].judul);
+
+    cout << "Pengarang      : ";
+    getline(cin, daftarBuku[jumlahBuku].pengarang);
+
+    cout << "Penerbit       : ";
+    getline(cin, daftarBuku[jumlahBuku].penerbit);
+
+    cout << "Tahun Terbit   : ";
+    getline(cin, daftarBuku[jumlahBuku].tahun_terbit);
+
+    cout << "Stok           : ";
+    cin >> daftarBuku[jumlahBuku].stok;
+
+    jumlahBuku++;
+
+    // ===== FILE HANDLING (SAVE NEW DATA) =====
+    simpanFile();
+
+    cout << "Buku berhasil ditambahkan!\n";
+}
+
+void tampilBuku() {
+    bacaFile();
+
+    cout << "\n===== Daftar Buku =====\n";
+    if (jumlahBuku == 0) {
+        cout << "Belum ada data buku.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahBuku; i++) {
+        cout << i + 1 << ". "
+             << daftarBuku[i].id_buku << " | "
+             << daftarBuku[i].isbn << " | "
+             << daftarBuku[i].judul << " | "
+             << daftarBuku[i].pengarang << " | "
+             << daftarBuku[i].penerbit << " | "
+             << daftarBuku[i].tahun_terbit << " | "
+             << daftarBuku[i].stok << endl;
+    }
+}
+
+void cariBuku() {
+    bacaFile();
+    string cariId;
+    bool ditemukan = false;
+
+    cout << "\n===== Cari Buku =====\n";
+    cout << "Masukkan ID Buku : ";
+    cin >> cariId;
+
+    for (int i = 0; i < jumlahBuku; i++) {
+        if (daftarBuku[i].id_buku == cariId) {
+            cout << "\nData ditemukan:\n";
+            cout << daftarBuku[i].id_buku << " | "
+                 << daftarBuku[i].isbn << " | "
+                 << daftarBuku[i].judul << " | "
+                 << daftarBuku[i].pengarang << " | "
+                 << daftarBuku[i].penerbit << " | "
+                 << daftarBuku[i].tahun_terbit << " | "
+                 << daftarBuku[i].stok << endl;
+            ditemukan = true;
+            break;
+        }
+    }
+
+    if (!ditemukan) cout << "Buku tidak ditemukan!\n";
+}
+
+void hapusBuku() {
+    bacaFile();
+    string hapusId;
+    bool found = false;
+
+    cout << "\n===== Hapus Buku =====\n";
+    cout << "Masukkan ID Buku : ";
+    cin >> hapusId;
+
+    for (int i = 0; i < jumlahBuku; i++) {
+        if (daftarBuku[i].id_buku == hapusId) {
+            for (int j = i; j < jumlahBuku - 1; j++) {
+                daftarBuku[j] = daftarBuku[j + 1];
+            }
+            jumlahBuku--;
+            simpanFile();
+            cout << "Buku berhasil dihapus!\n";
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) cout << "ID tidak ditemukan!\n";
+}
+
+// =================== MENU ======================
+
+int main() {
+    int pilihan;
+    do {
+        cout << "\n===== MENU PERPUSTAKAAN BUKU =====\n";
+        cout << "1. Tambah Buku\n";
+        cout << "2. Tampil Buku\n";
+        cout << "3. Cari Buku\n";
+        cout << "4. Hapus Buku\n";
+        cout << "5. Keluar\n";
+        cout << "Pilihan: ";
+        cin >> pilihan;
+
+        switch(pilihan) {
+            case 1: tambahBuku(); break;
+            case 2: tampilBuku(); break;
+            case 3: cariBuku(); break;
+            case 4: hapusBuku(); break;
+            case 5: cout << "Keluar...\n"; break;
+            default: cout << "Pilihan tidak valid!\n";
+        }
+
+    } while (pilihan != 5);
+
+    return 0;
+}
