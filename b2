@@ -1,0 +1,221 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+struct Buku {
+    string id_buku;
+    string isbn;
+    string judul;
+    string pengarang;
+    string penerbit;
+    string tahun_terbit;
+    string sstok;
+    int stok;
+};
+
+Buku daftar[100];
+int jumlah = 0;
+
+
+void simpanKeFile(const Buku &b) {
+    ofstream file("buku.txt", ios::app);
+    if (!file) {
+        cout << "File gagal dibuka!\n";
+        return;
+    }
+
+    file << b.id_buku << "|"
+         << b.isbn << "|"
+         << b.judul << "|"
+         << b.pengarang << "|"
+         << b.penerbit << "|"
+         << b.tahun_terbit << "|"
+         << b.stok << endl;
+
+    file.close();
+}
+
+
+void tambahBuku() {
+    int jum;
+    cout << "Masukkan jumlah buku yang akan ditambahkan: ";
+    cin >> jum;
+
+    for (int i = 0; i < jum; i++) {
+        Buku b;
+        cout << "\nData buku ke-" << i + 1 << endl;
+
+        do {
+            cout << "Masukkan ID Buku (6 karakter): ";
+            cin >> b.id_buku;
+
+            if (b.id_buku.length() != 6)
+                cout << "ID Buku harus 6 karakter!\n";
+        } while (b.id_buku.length() != 6);
+
+        do {
+            cout << "Masukkan ISBN (11 karakter): ";
+            cin >> b.isbn;
+            if (b.isbn.length() != 11)
+                cout << "ISBN harus 11 karakter!\n";
+        } while (b.isbn.length() != 11);
+
+        cin.ignore();
+        cout << "Judul: ";
+        getline(cin, b.judul);
+
+        cout << "Pengarang: ";
+        getline(cin, b.pengarang);
+
+        cout << "Penerbit: ";
+        getline(cin, b.penerbit);
+
+        cout << "Tahun Terbit: ";
+        cin >> b.tahun_terbit;
+
+        cout << "Stok: ";
+        cin >> b.stok;
+
+        daftar[jumlah] = b;
+        jumlah++;
+
+        simpanKeFile(b);
+        cout << "Data buku berhasil ditambahkan!\n";
+    }
+    cout << endl;
+}
+
+
+void tampilBuku() {
+    ifstream fileInput("buku.txt");
+    if (fileInput.is_open()) {
+        string line;
+        cout << "\nDaftar Buku:";
+        while (getline(fileInput, line)) {
+            cout << line << endl;
+        }
+        cout << "File berhasil dibuka!\n";
+        fileInput.close();
+    }
+    else {
+        cout << "File gagal dibuka!\n" << endl;
+    }
+}
+
+void cariBuku() {
+    ifstream fileInput("buku.txt");
+    if(fileInput.is_open()){
+        Buku cari;
+        string carijudul, teks;
+        bool ketemu = false;
+        cout << "Input judul buku yang dicari: ";
+        cin >> carijudul;
+        while (getline(fileInput, teks)) {
+            stringstream ss(teks);
+            getline(ss, cari.id_buku, '|');
+            getline(ss, cari.isbn, '|');
+            getline(ss, cari.judul, '|');
+            getline(ss, cari.pengarang, '|');
+            getline(ss, cari.penerbit, '|');
+            getline(ss, cari.tahun_terbit, '|');
+            getline(ss, cari.sstok);
+
+            if (cari.judul == carijudul) {
+                cout << "\nData Ditemukan!\n";
+                cout << "ID Buku: " << cari.id_buku << endl;
+                cout << "ISBN\t  : "     << cari.isbn << endl;
+                cout << "Judul\t  : "     << cari.judul << endl;
+                cout << "Pengarang\t  : "   << cari.pengarang << endl;
+                cout << "Penerbit\t  : "      << cari.penerbit << endl;
+                cout << "Tahun terbit  : "    << cari.tahun_terbit << endl;
+                cout << "Stok\t  : "   << cari.sstok << endl;
+                ketemu = true;
+                break;
+            }
+        }
+        if (!ketemu) {
+            cout << "\nBuku dengan Judul " << carijudul << " tidak ditemukan.\n";
+        }
+        fileInput.close();
+        cout << "File berhasil dibuka!\n";
+    } else {
+        cout << "File gagal dibuka!\n";
+    }
+}
+
+void editBuku() {
+    int no;
+    cout << "Masukkan nomor buku yang akan diedit: ";
+    cin >> no;
+
+    if (no < 1 || no > jumlah) {
+        cout << "Nomor tidak valid!\n\n";
+        return;
+    }
+
+    cin.ignore();
+    cout << "Judul baru: ";
+    getline(cin, daftar[no-1].judul);
+
+    cout << "Pengarang baru: ";
+    getline(cin, daftar[no-1].pengarang);
+
+    cout << "Penerbit baru: ";
+    getline(cin, daftar[no-1].penerbit);
+
+    cout << "Tahun terbit baru: ";
+    cin >> daftar[no-1].tahun_terbit;
+
+    cout << "Stok baru: ";
+    cin >> daftar[no-1].stok;
+
+    cout << "Data berhasil diedit!\n\n";
+}
+
+void hapusBuku() {
+    int no;
+    cout << "Nomor buku yang ingin dihapus: ";
+    cin >> no;
+
+    if (no < 1 || no > jumlah) {
+        cout << "Nomor tidak valid!\n\n";
+        return;
+    }
+
+    for (int i = no-1; i < jumlah-1; i++) {
+        daftar[i] = daftar[i + 1];
+    }
+    jumlah--;
+
+    cout << "Data berhasil dihapus!\n\n";
+}
+
+
+int main() {
+    int pilih;
+    do {
+        cout << "========== MENU BUKU ==========\n";
+        cout << "1. Tambah Buku\n";
+        cout << "2. Tampil Buku\n";
+        cout << "3. Cari Buku\n";
+        cout << "4. Edit Buku\n";
+        cout << "5. Hapus Buku\n";
+        cout << "6. Keluar\n";
+        cout << "Pilih menu: ";
+        cin >> pilih;
+
+        switch (pilih) {
+            case 1: tambahBuku(); break;
+            case 2: tampilBuku(); break;
+            case 3: cariBuku(); break;
+            case 4: editBuku(); break;
+            case 5: hapusBuku(); break;
+            case 6: cout << "Keluar...\n"; break;
+            default: cout << "Menu tidak valid!\n\n";
+        }
+
+    } while (pilih != 6);
+
+    return 0;
+}
